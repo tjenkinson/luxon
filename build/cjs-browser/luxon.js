@@ -522,18 +522,27 @@ function pick(obj, keys) {
 function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
-function assign(
-  target
-  /* , ...sources */
-) {
+function assign(target) {
+  for (
+    var _len = arguments.length, sources = new Array(_len > 1 ? _len - 1 : 0), _key = 1;
+    _key < _len;
+    _key++
+  ) {
+    sources[_key - 1] = arguments[_key];
+  }
+
+  if (typeof Object.assign === "function") {
+    return Object.assign.apply(Object, [target].concat(sources));
+  }
+
   if (target === null || target === undefined) {
     throw new TypeError("Cannot convert undefined or null to object");
   }
 
   var to = Object(target);
 
-  for (var index = 1; index < arguments.length; index++) {
-    var nextSource = arguments[index];
+  for (var index = 0; index < sources.length; index++) {
+    var nextSource = sources[index];
 
     if (nextSource !== null && nextSource !== undefined) {
       for (var nextKey in nextSource) {
@@ -548,7 +557,10 @@ function assign(
   return to;
 }
 function find(array, predicate) {
-  // 1. Let O be ? ToObject(this value).
+  if (typeof Array.prototype.find === "function") {
+    return Array.prototype.find.call(array, predicate);
+  } // 1. Let O be ? ToObject(this value).
+
   if (array == null) {
     throw TypeError('"this" is null or not defined');
   }
@@ -582,7 +594,10 @@ function find(array, predicate) {
   return undefined;
 }
 function findIndex(array, predicate) {
-  // 1. Let O be ? ToObject(this value).
+  if (typeof Array.prototype.findIndex === "function") {
+    return Array.prototype.findIndex.call(array, predicate);
+  } // 1. Let O be ? ToObject(this value).
+
   if (array == null) {
     throw new TypeError('"this" is null or not defined');
   }
@@ -628,6 +643,10 @@ function padStart(input, n) {
     n = 2;
   }
 
+  if (typeof String.prototype.padStart === "function") {
+    return String.prototype.padStart.call(input, n);
+  }
+
   if (input.toString().length < n) {
     var res = "";
 
@@ -642,6 +661,10 @@ function padStart(input, n) {
   }
 }
 function startsWith(str, search, rawPos) {
+  if (typeof String.prototype.startsWith === "function") {
+    return String.prototype.startsWith.call(str, search, rawPos);
+  }
+
   var pos = rawPos > 0 ? rawPos | 0 : 0;
   return str.substring(pos, pos + search.length) === search;
 }
@@ -671,6 +694,10 @@ function roundTo(number, digits, towardZero) {
   return rounder(number * factor) / factor;
 }
 function trunc(v) {
+  if (typeof Math.trunc === "function") {
+    return Math.trunc(v);
+  }
+
   return v < 0 ? Math.ceil(v) : Math.floor(v);
 }
 function sign(x) {
@@ -773,7 +800,10 @@ function parseZoneInfo(ts, offsetFormat, locale, timeZone) {
   }
 }
 function isNaN$1(input) {
-  // eslint-disable-next-line no-self-compare
+  if (typeof Number.isNaN === "function") {
+    return Number.isNaN(input);
+  } // eslint-disable-next-line no-self-compare
+
   return typeof input === "number" && input !== input;
 } // signedOffset('-5', '30') -> -330
 
