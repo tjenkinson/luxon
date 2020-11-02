@@ -89,6 +89,7 @@ export function hasOwnProperty(obj, prop) {
 
 export function assign(target, ...sources) {
   if (typeof Object.assign === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
     return Object.assign(target, ...sources);
   }
 
@@ -201,6 +202,23 @@ export function findIndex(array, predicate) {
   return -1;
 }
 
+export function is(x, y) {
+  if (typeof Object.is === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
+    return Object.is(x, y);
+  }
+  // SameValue algorithm
+  if (x === y) {
+    // Steps 1-5, 7-10
+    // Steps 6.b-6.e: +0 != -0
+    return x !== 0 || 1 / x === 1 / y;
+  } else {
+    // Step 6.a: NaN == NaN
+    // eslint-disable-next-line no-self-compare
+    return x !== x && y !== y;
+  }
+}
+
 // NUMBERS AND STRINGS
 
 export function integerBetween(thing, bottom, top) {
@@ -264,6 +282,7 @@ export function roundTo(number, digits, towardZero = false) {
 
 export function trunc(v) {
   if (typeof Math.trunc === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
     return Math.trunc(v);
   }
   return v < 0 ? Math.ceil(v) : Math.floor(v);
@@ -372,6 +391,7 @@ export function parseZoneInfo(ts, offsetFormat, locale, timeZone = null) {
 
 export function isNaN(input) {
   if (typeof Number.isNaN === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
     return Number.isNaN(input);
   }
   // eslint-disable-next-line no-self-compare
@@ -388,7 +408,7 @@ export function signedOffset(offHourStr, offMinuteStr) {
   }
 
   const offMin = parseInt(offMinuteStr, 10) || 0,
-    offMinSigned = offHour < 0 || Object.is(offHour, -0) ? -offMin : offMin;
+    offMinSigned = offHour < 0 || is(offHour, -0) ? -offMin : offMin;
   return offHour * 60 + offMinSigned;
 }
 
