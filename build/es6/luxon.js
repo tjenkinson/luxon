@@ -341,6 +341,7 @@ function hasOwnProperty(obj, prop) {
 
 function assign(target, ...sources) {
   if (typeof Object.assign === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
     return Object.assign(target, ...sources);
   }
 
@@ -453,6 +454,23 @@ function findIndex(array, predicate) {
   return -1;
 }
 
+function is(x, y) {
+  if (typeof Object.is === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
+    return Object.is(x, y);
+  }
+  // SameValue algorithm
+  if (x === y) {
+    // Steps 1-5, 7-10
+    // Steps 6.b-6.e: +0 != -0
+    return x !== 0 || 1 / x === 1 / y;
+  } else {
+    // Step 6.a: NaN == NaN
+    // eslint-disable-next-line no-self-compare
+    return x !== x && y !== y;
+  }
+}
+
 // NUMBERS AND STRINGS
 
 function integerBetween(thing, bottom, top) {
@@ -516,6 +534,7 @@ function roundTo(number, digits, towardZero = false) {
 
 function trunc(v) {
   if (typeof Math.trunc === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
     return Math.trunc(v);
   }
   return v < 0 ? Math.ceil(v) : Math.floor(v);
@@ -624,6 +643,7 @@ function parseZoneInfo(ts, offsetFormat, locale, timeZone = null) {
 
 function isNaN$1(input) {
   if (typeof Number.isNaN === "function") {
+    // eslint-disable-next-line es5/no-es6-static-methods
     return Number.isNaN(input);
   }
   // eslint-disable-next-line no-self-compare
@@ -640,7 +660,7 @@ function signedOffset(offHourStr, offMinuteStr) {
   }
 
   const offMin = parseInt(offMinuteStr, 10) || 0,
-    offMinSigned = offHour < 0 || Object.is(offHour, -0) ? -offMin : offMin;
+    offMinSigned = offHour < 0 || is(offHour, -0) ? -offMin : offMin;
   return offHour * 60 + offMinSigned;
 }
 
@@ -830,7 +850,7 @@ function formatRelativeTime(unit, count, numeric = "always", narrow = false) {
     }
   }
 
-  const isInPast = Object.is(count, -0) || count < 0,
+  const isInPast = is(count, -0) || count < 0,
     fmtValue = Math.abs(count),
     singular = fmtValue === 1,
     lilUnits = units[unit],
