@@ -4555,6 +4555,28 @@ define(["exports"], function(exports) {
     timeZoneName: l
   };
 
+  // Note these are intentionally `var` so that consumers can replace them
+  var assign = Object.assign;
+  var find = Array.prototype.find;
+  var findIndex = Array.prototype.findIndex;
+  var is = Object.is;
+  var isNaN$1 = Number.isNaN;
+  var padStart = String.prototype.padStart;
+  var startsWith$1 = String.prototype.startsWith;
+  var trunc$1 = Math.trunc;
+
+  var Ponyfills = /*#__PURE__*/ Object.freeze({
+    __proto__: null,
+    assign: assign,
+    find: find,
+    findIndex: findIndex,
+    is: is,
+    isNaN: isNaN$1,
+    padStart: padStart,
+    startsWith: startsWith$1,
+    trunc: trunc$1
+  });
+
   /*
 	  This is just a junk drawer, containing anything used across multiple classes.
 	  Because Luxon is small(ish), this should stay small and we won't worry about splitting
@@ -4628,7 +4650,7 @@ define(["exports"], function(exports) {
   function hasOwnProperty$1(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
   }
-  function assign(target) {
+  function assign$1(target) {
     for (
       var _len = arguments.length, sources = new Array(_len > 1 ? _len - 1 : 0), _key = 1;
       _key < _len;
@@ -4637,121 +4659,16 @@ define(["exports"], function(exports) {
       sources[_key - 1] = arguments[_key];
     }
 
-    if (typeof Object.assign === "function") {
-      // eslint-disable-next-line es5/no-es6-static-methods
-      return Object.assign.apply(Object, [target].concat(sources));
-    }
-
-    if (target === null || target === undefined) {
-      throw new TypeError("Cannot convert undefined or null to object");
-    }
-
-    var to = Object(target);
-
-    for (var index = 0; index < sources.length; index++) {
-      var nextSource = sources[index];
-
-      if (nextSource !== null && nextSource !== undefined) {
-        for (var nextKey in nextSource) {
-          // Avoid bugs when hasOwnProperty is shadowed
-          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-            to[nextKey] = nextSource[nextKey];
-          }
-        }
-      }
-    }
-
-    return to;
+    return assign.apply(Ponyfills, [target].concat(sources));
   }
-  function find(array, predicate) {
-    if (typeof Array.prototype.find === "function") {
-      return Array.prototype.find.call(array, predicate);
-    } // 1. Let O be ? ToObject(this value).
-
-    if (array == null) {
-      throw TypeError('"this" is null or not defined');
-    }
-
-    var o = Object(array); // 2. Let len be ? ToLength(? Get(O, "length")).
-
-    var len = o.length >>> 0; // 3. If IsCallable(predicate) is false, throw a TypeError exception.
-
-    if (typeof predicate !== "function") {
-      throw TypeError("predicate must be a function");
-    } // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-
-    var thisArg = arguments[2]; // 5. Let k be 0.
-
-    var k = 0; // 6. Repeat, while k < len
-
-    while (k < len) {
-      // a. Let Pk be ! ToString(k).
-      // b. Let kValue be ? Get(O, Pk).
-      // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
-      // d. If testResult is true, return kValue.
-      var kValue = o[k];
-
-      if (predicate.call(thisArg, kValue, k, o)) {
-        return kValue;
-      } // e. Increase k by 1.
-
-      k++;
-    } // 7. Return undefined.
-
-    return undefined;
+  function find$1(array, predicate) {
+    return find.call(array, predicate);
   }
-  function findIndex(array, predicate) {
-    if (typeof Array.prototype.findIndex === "function") {
-      return Array.prototype.findIndex.call(array, predicate);
-    } // 1. Let O be ? ToObject(this value).
-
-    if (array == null) {
-      throw new TypeError('"this" is null or not defined');
-    }
-
-    var o = Object(array); // 2. Let len be ? ToLength(? Get(O, "length")).
-
-    var len = o.length >>> 0; // 3. If IsCallable(predicate) is false, throw a TypeError exception.
-
-    if (typeof predicate !== "function") {
-      throw new TypeError("predicate must be a function");
-    } // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-
-    var thisArg = arguments[2]; // 5. Let k be 0.
-
-    var k = 0; // 6. Repeat, while k < len
-
-    while (k < len) {
-      // a. Let Pk be ! ToString(k).
-      // b. Let kValue be ? Get(O, Pk).
-      // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
-      // d. If testResult is true, return k.
-      var kValue = o[k];
-
-      if (predicate.call(thisArg, kValue, k, o)) {
-        return k;
-      } // e. Increase k by 1.
-
-      k++;
-    } // 7. Return -1.
-
-    return -1;
+  function findIndex$1(array, predicate) {
+    return findIndex.call(array, predicate);
   }
-  function is(x, y) {
-    if (typeof Object.is === "function") {
-      // eslint-disable-next-line es5/no-es6-static-methods
-      return Object.is(x, y);
-    } // SameValue algorithm
-
-    if (x === y) {
-      // Steps 1-5, 7-10
-      // Steps 6.b-6.e: +0 != -0
-      return x !== 0 || 1 / x === 1 / y;
-    } else {
-      // Step 6.a: NaN == NaN
-      // eslint-disable-next-line no-self-compare
-      return x !== x && y !== y;
-    }
+  function is$1(x, y) {
+    return is(x, y);
   } // NUMBERS AND STRINGS
 
   function integerBetween(thing, bottom, top) {
@@ -4761,35 +4678,15 @@ define(["exports"], function(exports) {
   function floorMod(x, n) {
     return x - n * Math.floor(x / n);
   }
-  function padStart(input, n) {
+  function padStart$1(input, n) {
     if (n === void 0) {
       n = 2;
     }
 
-    if (typeof String.prototype.padStart === "function") {
-      return String.prototype.padStart.call(input, n);
-    }
-
-    if (input.toString().length < n) {
-      var res = "";
-
-      for (var i = 0; i < n; i++) {
-        res += "0";
-      }
-
-      res += input;
-      return res.slice(-n);
-    } else {
-      return input.toString();
-    }
+    return padStart.call(input, n);
   }
-  function startsWith$1(str, search, rawPos) {
-    if (typeof String.prototype.startsWith === "function") {
-      return String.prototype.startsWith.call(str, search, rawPos);
-    }
-
-    var pos = rawPos > 0 ? rawPos | 0 : 0;
-    return str.substring(pos, pos + search.length) === search;
+  function startsWith$2(str, search, rawPos) {
+    return startsWith$1.call(str, search, rawPos);
   }
   function parseInteger(string) {
     if (isUndefined(string) || string === null || string === "") {
@@ -4813,16 +4710,11 @@ define(["exports"], function(exports) {
     }
 
     var factor = Math.pow(10, digits),
-      rounder = towardZero ? trunc$1 : Math.round;
+      rounder = towardZero ? trunc$2 : Math.round;
     return rounder(number * factor) / factor;
   }
-  function trunc$1(v) {
-    if (typeof Math.trunc === "function") {
-      // eslint-disable-next-line es5/no-es6-static-methods
-      return Math.trunc(v);
-    }
-
-    return v < 0 ? Math.ceil(v) : Math.floor(v);
+  function trunc$2(v) {
+    return trunc$1(v);
   }
   function sign$1(x) {
     return (x > 0) - (x < 0) || +x;
@@ -4899,7 +4791,7 @@ define(["exports"], function(exports) {
       intlOpts.timeZone = timeZone;
     }
 
-    var modified = assign(
+    var modified = assign$1(
         {
           timeZoneName: offsetFormat
         },
@@ -4908,7 +4800,9 @@ define(["exports"], function(exports) {
       intl = hasIntl();
 
     if (intl && hasFormatToParts()) {
-      var parsed = find(new Intl.DateTimeFormat(locale, modified).formatToParts(date), function(m) {
+      var parsed = find$1(new Intl.DateTimeFormat(locale, modified).formatToParts(date), function(
+        m
+      ) {
         return m.type.toLowerCase() === "timezonename";
       });
       return parsed ? parsed.value : null;
@@ -4923,30 +4817,25 @@ define(["exports"], function(exports) {
       return null;
     }
   }
-  function isNaN$1(input) {
-    if (typeof Number.isNaN === "function") {
-      // eslint-disable-next-line es5/no-es6-static-methods
-      return Number.isNaN(input);
-    } // eslint-disable-next-line no-self-compare
-
-    return typeof input === "number" && input !== input;
+  function isNaN$2(input) {
+    return isNaN$1(input);
   } // signedOffset('-5', '30') -> -330
 
   function signedOffset(offHourStr, offMinuteStr) {
     var offHour = parseInt(offHourStr, 10); // don't || this because we want to preserve -0
 
-    if (isNaN$1(offHour)) {
+    if (isNaN$2(offHour)) {
       offHour = 0;
     }
 
     var offMin = parseInt(offMinuteStr, 10) || 0,
-      offMinSigned = offHour < 0 || is(offHour, -0) ? -offMin : offMin;
+      offMinSigned = offHour < 0 || is$1(offHour, -0) ? -offMin : offMin;
     return offHour * 60 + offMinSigned;
   } // COERCION
 
   function asNumber(value) {
     var numericValue = Number(value);
-    if (typeof value === "boolean" || value === "" || isNaN$1(numericValue))
+    if (typeof value === "boolean" || value === "" || isNaN$2(numericValue))
       throw new InvalidArgumentError("Invalid unit value " + value);
     return numericValue;
   }
@@ -4965,19 +4854,19 @@ define(["exports"], function(exports) {
     return normalized;
   }
   function formatOffset(offset, format) {
-    var hours = trunc$1(Math.abs(offset / 60)),
-      minutes = trunc$1(Math.abs(offset % 60)),
+    var hours = trunc$2(Math.abs(offset / 60)),
+      minutes = trunc$2(Math.abs(offset % 60)),
       sign = offset >= 0 ? "+" : "-";
 
     switch (format) {
       case "short":
-        return "" + sign + padStart(hours, 2) + ":" + padStart(minutes, 2);
+        return "" + sign + padStart$1(hours, 2) + ":" + padStart$1(minutes, 2);
 
       case "narrow":
         return "" + sign + hours + (minutes > 0 ? ":" + minutes : "");
 
       case "techie":
-        return "" + sign + padStart(hours, 2) + padStart(minutes, 2);
+        return "" + sign + padStart$1(hours, 2) + padStart$1(minutes, 2);
 
       default:
         throw new RangeError("Value format " + format + " is out of range for property format");
@@ -5133,7 +5022,7 @@ define(["exports"], function(exports) {
       }
     }
 
-    var isInPast = is(count, -0) || count < 0,
+    var isInPast = is$1(count, -0) || count < 0,
       fmtValue = Math.abs(count),
       singular = fmtValue === 1,
       lilUnits = units[unit],
@@ -5355,7 +5244,7 @@ define(["exports"], function(exports) {
         this.systemLoc = this.loc.redefaultToSystem();
       }
 
-      var df = this.systemLoc.dtFormatter(dt, assign({}, this.opts, opts));
+      var df = this.systemLoc.dtFormatter(dt, assign$1({}, this.opts, opts));
       return df.format();
     };
 
@@ -5364,7 +5253,7 @@ define(["exports"], function(exports) {
         opts = {};
       }
 
-      var df = this.loc.dtFormatter(dt, assign({}, this.opts, opts));
+      var df = this.loc.dtFormatter(dt, assign$1({}, this.opts, opts));
       return df.format();
     };
 
@@ -5373,7 +5262,7 @@ define(["exports"], function(exports) {
         opts = {};
       }
 
-      var df = this.loc.dtFormatter(dt, assign({}, this.opts, opts));
+      var df = this.loc.dtFormatter(dt, assign$1({}, this.opts, opts));
       return df.formatToParts();
     };
 
@@ -5382,7 +5271,7 @@ define(["exports"], function(exports) {
         opts = {};
       }
 
-      var df = this.loc.dtFormatter(dt, assign({}, this.opts, opts));
+      var df = this.loc.dtFormatter(dt, assign$1({}, this.opts, opts));
       return df.resolvedOptions();
     };
 
@@ -5393,10 +5282,10 @@ define(["exports"], function(exports) {
 
       // we get some perf out of doing this here, annoyingly
       if (this.opts.forceSimple) {
-        return padStart(n, p);
+        return padStart$1(n, p);
       }
 
-      var opts = assign({}, this.opts);
+      var opts = assign$1({}, this.opts);
 
       if (p > 0) {
         opts.padTo = p;
@@ -6839,7 +6728,7 @@ define(["exports"], function(exports) {
       return (
         loc.numberingSystem === "latn" ||
         !loc.locale ||
-        startsWith$1(loc.locale, "en") ||
+        startsWith$2(loc.locale, "en") ||
         (hasIntl() &&
           new Intl.DateTimeFormat(loc.intl).resolvedOptions().numberingSystem === "latn")
       );
@@ -6873,7 +6762,7 @@ define(["exports"], function(exports) {
         // to match the browser's numberformatter defaults
         var _fixed = this.floor ? Math.floor(i) : roundTo(i, 3);
 
-        return padStart(_fixed, this.padTo);
+        return padStart$1(_fixed, this.padTo);
       }
     };
 
@@ -6914,7 +6803,7 @@ define(["exports"], function(exports) {
       }
 
       if (this.hasIntl) {
-        var intlOpts = assign({}, this.opts);
+        var intlOpts = assign$1({}, this.opts);
 
         if (z) {
           intlOpts.timeZone = z;
@@ -6966,7 +6855,7 @@ define(["exports"], function(exports) {
 
   var PolyRelFormatter = /*#__PURE__*/ (function() {
     function PolyRelFormatter(intl, isEnglish, opts) {
-      this.opts = assign(
+      this.opts = assign$1(
         {
           style: "long"
         },
@@ -7107,7 +6996,7 @@ define(["exports"], function(exports) {
       }
 
       return this.clone(
-        assign({}, alts, {
+        assign$1({}, alts, {
           defaultToEN: true
         })
       );
@@ -7119,7 +7008,7 @@ define(["exports"], function(exports) {
       }
 
       return this.clone(
-        assign({}, alts, {
+        assign$1({}, alts, {
           defaultToEN: false
         })
       );
@@ -7254,7 +7143,7 @@ define(["exports"], function(exports) {
     _proto4.extract = function extract(dt, intlOpts, field) {
       var df = this.dtFormatter(dt, intlOpts),
         results = df.formatToParts(),
-        matching = find(results, function(m) {
+        matching = find$1(results, function(m) {
           return m.type.toLowerCase() === field;
         });
       return matching ? matching.value : null;
@@ -7291,7 +7180,7 @@ define(["exports"], function(exports) {
         this.locale === "en" ||
         this.locale.toLowerCase() === "en-us" ||
         (hasIntl() &&
-          startsWith$1(new Intl.DateTimeFormat(this.intl).resolvedOptions().locale, "en-us"))
+          startsWith$2(new Intl.DateTimeFormat(this.intl).resolvedOptions().locale, "en-us"))
       );
     };
 
@@ -7362,7 +7251,7 @@ define(["exports"], function(exports) {
               zone = _ex[1],
               next = _ex[2];
 
-            return [assign(mergedVals, val), mergedZone || zone, next];
+            return [assign$1(mergedVals, val), mergedZone || zone, next];
           },
           [{}, null, 1]
         )
@@ -7689,7 +7578,7 @@ define(["exports"], function(exports) {
         milliseconds: 1000
       }
     },
-    casualMatrix = assign(
+    casualMatrix = assign$1(
       {
         years: {
           quarters: 4,
@@ -7723,7 +7612,7 @@ define(["exports"], function(exports) {
     ),
     daysInYearAccurate = 146097.0 / 400,
     daysInMonthAccurate = 146097.0 / 4800,
-    accurateMatrix = assign(
+    accurateMatrix = assign$1(
       {
         years: {
           quarters: 4,
@@ -7776,7 +7665,7 @@ define(["exports"], function(exports) {
 
     // deep merge for vals
     var conf = {
-      values: clear ? alts.values : assign({}, dur.values, alts.values || {}),
+      values: clear ? alts.values : assign$1({}, dur.values, alts.values || {}),
       loc: dur.loc.clone(alts.loc),
       conversionAccuracy: alts.conversionAccuracy || dur.conversionAccuracy
     };
@@ -7793,7 +7682,7 @@ define(["exports"], function(exports) {
       sameSign = sign$1(raw) === sign$1(toMap[toUnit]),
       // ok, so this is wild, but see the matrix in the tests
       added =
-        !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : trunc$1(raw);
+        !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : trunc$2(raw);
     toMap[toUnit] += added;
     fromMap[fromUnit] -= added * conv;
   } // NB: mutates parameters
@@ -7874,7 +7763,7 @@ define(["exports"], function(exports) {
 
     Duration.fromMillis = function fromMillis(count, opts) {
       return Duration.fromObject(
-        assign(
+        assign$1(
           {
             milliseconds: count
           },
@@ -7939,7 +7828,7 @@ define(["exports"], function(exports) {
         parsed = _parseISODuration[0];
 
       if (parsed) {
-        var obj = assign(parsed, opts);
+        var obj = assign$1(parsed, opts);
         return Duration.fromObject(obj);
       } else {
         return Duration.invalid(
@@ -8044,7 +7933,7 @@ define(["exports"], function(exports) {
       }
 
       // reverse-compat since 1.2; we always round down now, never up, and we do it by default
-      var fmtOpts = assign({}, opts, {
+      var fmtOpts = assign$1({}, opts, {
         floor: opts.round !== false && opts.floor !== false
       });
       return this.isValid
@@ -8065,7 +7954,7 @@ define(["exports"], function(exports) {
       }
 
       if (!this.isValid) return {};
-      var base = assign({}, this.values);
+      var base = assign$1({}, this.values);
 
       if (opts.includeConfig) {
         base.conversionAccuracy = this.conversionAccuracy;
@@ -8218,7 +8107,7 @@ define(["exports"], function(exports) {
 
     _proto.set = function set(values) {
       if (!this.isValid) return this;
-      var mixed = assign(this.values, normalizeObject(values, Duration.normalizeUnit, []));
+      var mixed = assign$1(this.values, normalizeObject(values, Duration.normalizeUnit, []));
       return clone(this, {
         values: mixed
       });
@@ -8325,7 +8214,7 @@ define(["exports"], function(exports) {
             own += vals[k];
           }
 
-          var i = trunc$1(own);
+          var i = trunc$2(own);
           built[k] = i;
           accumulated[k] = own - i; // we'd like to absorb these fractions in another unit
           // plus anything further down the chain that should be rolled up in to this
@@ -9634,7 +9523,7 @@ define(["exports"], function(exports) {
       }
     }
 
-    var duration = Duration.fromObject(assign(results, opts));
+    var duration = Duration.fromObject(assign$1(results, opts));
 
     if (lowerOrderUnits.length > 0) {
       var _Duration$fromMillis;
@@ -9776,7 +9665,7 @@ define(["exports"], function(exports) {
         deser: function deser(_ref2) {
           var s = _ref2[0];
           return (
-            findIndex(strings, function(i) {
+            findIndex$1(strings, function(i) {
               return stripInsensitivities(s) === stripInsensitivities(i);
             }) + startIndex
           );
@@ -10244,7 +10133,7 @@ define(["exports"], function(exports) {
       units = tokens.map(function(t) {
         return unitForToken(t, locale);
       }),
-      disqualifyingUnit = find(units, function(t) {
+      disqualifyingUnit = find$1(units, function(t) {
         return t.invalidReason;
       });
 
@@ -10319,7 +10208,7 @@ define(["exports"], function(exports) {
 
   function uncomputeOrdinal(year, ordinal) {
     var table = isLeapYear(year) ? leapLadder : nonLeapLadder,
-      month0 = findIndex(table, function(i) {
+      month0 = findIndex$1(table, function(i) {
         return i < ordinal;
       }),
       day = ordinal - table[month0];
@@ -10351,7 +10240,7 @@ define(["exports"], function(exports) {
       weekYear = year;
     }
 
-    return assign(
+    return assign$1(
       {
         weekYear: weekYear,
         weekNumber: weekNumber,
@@ -10383,7 +10272,7 @@ define(["exports"], function(exports) {
       month = _uncomputeOrdinal.month,
       day = _uncomputeOrdinal.day;
 
-    return assign(
+    return assign$1(
       {
         year: year,
         month: month,
@@ -10397,7 +10286,7 @@ define(["exports"], function(exports) {
       month = gregData.month,
       day = gregData.day,
       ordinal = computeOrdinal(year, month, day);
-    return assign(
+    return assign$1(
       {
         year: year,
         ordinal: ordinal
@@ -10412,7 +10301,7 @@ define(["exports"], function(exports) {
       month = _uncomputeOrdinal2.month,
       day = _uncomputeOrdinal2.day;
 
-    return assign(
+    return assign$1(
       {
         year: year,
         month: month,
@@ -10506,7 +10395,7 @@ define(["exports"], function(exports) {
       invalid: inst.invalid
     };
     return new DateTime(
-      assign({}, current, alts, {
+      assign$1({}, current, alts, {
         old: current
       })
     );
@@ -10554,22 +10443,22 @@ define(["exports"], function(exports) {
 
   function adjustTime(inst, dur) {
     var oPre = inst.o,
-      year = inst.c.year + trunc$1(dur.years),
-      month = inst.c.month + trunc$1(dur.months) + trunc$1(dur.quarters) * 3,
-      c = assign({}, inst.c, {
+      year = inst.c.year + trunc$2(dur.years),
+      month = inst.c.month + trunc$2(dur.months) + trunc$2(dur.quarters) * 3,
+      c = assign$1({}, inst.c, {
         year: year,
         month: month,
         day:
           Math.min(inst.c.day, daysInMonth(year, month)) +
-          trunc$1(dur.days) +
-          trunc$1(dur.weeks) * 7
+          trunc$2(dur.days) +
+          trunc$2(dur.weeks) * 7
       }),
       millisToAdd = Duration.fromObject({
-        years: dur.years - trunc$1(dur.years),
-        quarters: dur.quarters - trunc$1(dur.quarters),
-        months: dur.months - trunc$1(dur.months),
-        weeks: dur.weeks - trunc$1(dur.weeks),
-        days: dur.days - trunc$1(dur.days),
+        years: dur.years - trunc$2(dur.years),
+        quarters: dur.quarters - trunc$2(dur.quarters),
+        months: dur.months - trunc$2(dur.months),
+        weeks: dur.weeks - trunc$2(dur.weeks),
+        days: dur.days - trunc$2(dur.days),
         hours: dur.hours,
         minutes: dur.minutes,
         seconds: dur.seconds,
@@ -10601,7 +10490,7 @@ define(["exports"], function(exports) {
     if (parsed && Object.keys(parsed).length !== 0) {
       var interpretationZone = parsedZone || zone,
         inst = DateTime.fromObject(
-          assign(parsed, opts, {
+          assign$1(parsed, opts, {
             zone: interpretationZone,
             // setZone is a valid option in the calling methods, but not in fromObject
             setZone: undefined
@@ -10835,7 +10724,7 @@ define(["exports"], function(exports) {
       var zone = config.zone || Settings.defaultZone;
       var invalid =
         config.invalid ||
-        (isNaN$1(config.ts) ? new Invalid("invalid input") : null) ||
+        (isNaN$2(config.ts) ? new Invalid("invalid input") : null) ||
         (!zone.isValid ? unsupportedZone(zone) : null);
       /**
        * @access private
@@ -10855,7 +10744,7 @@ define(["exports"], function(exports) {
         } else {
           var ot = zone.offset(this.ts);
           c = tsToObj(this.ts, ot);
-          invalid = isNaN$1(c.year) ? new Invalid("invalid input") : null;
+          invalid = isNaN$2(c.year) ? new Invalid("invalid input") : null;
           c = invalid ? null : c;
           o = invalid ? null : ot;
         }
@@ -11002,7 +10891,7 @@ define(["exports"], function(exports) {
 
       var ts = isDate(date) ? date.valueOf() : NaN;
 
-      if (isNaN$1(ts)) {
+      if (isNaN$2(ts)) {
         return DateTime.invalid("invalid input");
       }
 
@@ -11594,11 +11483,11 @@ define(["exports"], function(exports) {
       var mixed;
 
       if (settingWeekStuff) {
-        mixed = weekToGregorian(assign(gregorianToWeek(this.c), normalized));
+        mixed = weekToGregorian(assign$1(gregorianToWeek(this.c), normalized));
       } else if (!isUndefined(normalized.ordinal)) {
-        mixed = ordinalToGregorian(assign(gregorianToOrdinal(this.c), normalized));
+        mixed = ordinalToGregorian(assign$1(gregorianToOrdinal(this.c), normalized));
       } else {
-        mixed = assign(this.toObject(), normalized); // if we didn't set the day but we ended up on an overflow date,
+        mixed = assign$1(this.toObject(), normalized); // if we didn't set the day but we ended up on an overflow date,
         // use the last day of the right month
 
         if (isUndefined(normalized.day)) {
@@ -12025,7 +11914,7 @@ define(["exports"], function(exports) {
       }
 
       if (!this.isValid) return {};
-      var base = assign({}, this.c);
+      var base = assign$1({}, this.c);
 
       if (opts.includeConfig) {
         base.outputCalendar = this.outputCalendar;
@@ -12076,7 +11965,7 @@ define(["exports"], function(exports) {
         );
       }
 
-      var durOpts = assign(
+      var durOpts = assign$1(
         {
           locale: this.locale,
           numberingSystem: this.numberingSystem
@@ -12190,7 +12079,7 @@ define(["exports"], function(exports) {
       return diffRelative(
         base,
         this.plus(padding),
-        assign(options, {
+        assign$1(options, {
           numeric: "always",
           units: ["years", "months", "days", "hours", "minutes", "seconds"]
         })
@@ -12222,7 +12111,7 @@ define(["exports"], function(exports) {
             zone: this.zone
           }),
         this,
-        assign(options, {
+        assign$1(options, {
           numeric: "auto",
           units: ["years", "months", "days"],
           calendary: true
@@ -12983,6 +12872,7 @@ define(["exports"], function(exports) {
   exports.Interval = Interval;
   exports.InvalidZone = InvalidZone;
   exports.LocalZone = LocalZone;
+  exports.Ponyfills = Ponyfills;
   exports.Settings = Settings;
   exports.Zone = Zone;
 
