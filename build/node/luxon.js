@@ -238,27 +238,16 @@ const DATETIME_HUGE_WITH_SECONDS = {
   timeZoneName: l
 };
 
-// Note these are intentionally `var` so that consumers can replace them
-var assign = Object.assign;
-var find = Array.prototype.find;
-var findIndex = Array.prototype.findIndex;
-var is = Object.is;
-var isNaN$1 = Number.isNaN;
-var padStart = String.prototype.padStart;
-var startsWith = String.prototype.startsWith;
-var trunc = Math.trunc;
-
-var ponyfills = /*#__PURE__*/ Object.freeze({
-  __proto__: null,
-  assign: assign,
-  find: find,
-  findIndex: findIndex,
-  is: is,
-  isNaN: isNaN$1,
-  padStart: padStart,
-  startsWith: startsWith,
-  trunc: trunc
-});
+var Ponyfills = {
+  assign: Object.assign,
+  find: Array.prototype.find,
+  findIndex: Array.prototype.findIndex,
+  is: Object.is,
+  isNaN: Number.isNaN,
+  padStart: String.prototype.padStart,
+  startsWith: String.prototype.startsWith,
+  trunc: Math.trunc
+};
 
 /*
   This is just a junk drawer, containing anything used across multiple classes.
@@ -333,17 +322,17 @@ function pick(obj, keys) {
 function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
-function assign$1(target, ...sources) {
-  return assign(target, ...sources);
+function assign(target, ...sources) {
+  return Ponyfills.assign(target, ...sources);
 }
-function find$1(array, predicate) {
-  return find.call(array, predicate);
+function find(array, predicate) {
+  return Ponyfills.find.call(array, predicate);
 }
-function findIndex$1(array, predicate) {
-  return findIndex.call(array, predicate);
+function findIndex(array, predicate) {
+  return Ponyfills.findIndex.call(array, predicate);
 }
-function is$1(x, y) {
-  return is(x, y);
+function is(x, y) {
+  return Ponyfills.is(x, y);
 } // NUMBERS AND STRINGS
 
 function integerBetween(thing, bottom, top) {
@@ -353,11 +342,11 @@ function integerBetween(thing, bottom, top) {
 function floorMod(x, n) {
   return x - n * Math.floor(x / n);
 }
-function padStart$1(input, n = 2) {
-  return padStart.call(input, n);
+function padStart(input, n = 2) {
+  return Ponyfills.padStart.call(input, n);
 }
-function startsWith$1(str, search, rawPos) {
-  return startsWith.call(str, search, rawPos);
+function startsWith(str, search, rawPos) {
+  return Ponyfills.startsWith.call(str, search, rawPos);
 }
 function parseInteger(string) {
   if (isUndefined(string) || string === null || string === "") {
@@ -377,11 +366,11 @@ function parseMillis(fraction) {
 }
 function roundTo(number, digits, towardZero = false) {
   const factor = Math.pow(10, digits),
-    rounder = towardZero ? trunc$1 : Math.round;
+    rounder = towardZero ? trunc : Math.round;
   return rounder(number * factor) / factor;
 }
-function trunc$1(v) {
-  return trunc(v);
+function trunc(v) {
+  return Ponyfills.trunc(v);
 }
 function sign(x) {
   return (x > 0) - (x < 0) || +x;
@@ -454,7 +443,7 @@ function parseZoneInfo(ts, offsetFormat, locale, timeZone = null) {
     intlOpts.timeZone = timeZone;
   }
 
-  const modified = assign$1(
+  const modified = assign(
       {
         timeZoneName: offsetFormat
       },
@@ -463,7 +452,7 @@ function parseZoneInfo(ts, offsetFormat, locale, timeZone = null) {
     intl = hasIntl();
 
   if (intl && hasFormatToParts()) {
-    const parsed = find$1(
+    const parsed = find(
       new Intl.DateTimeFormat(locale, modified).formatToParts(date),
       m => m.type.toLowerCase() === "timezonename"
     );
@@ -479,25 +468,25 @@ function parseZoneInfo(ts, offsetFormat, locale, timeZone = null) {
     return null;
   }
 }
-function isNaN$2(input) {
-  return isNaN$1(input);
+function isNaN$1(input) {
+  return Ponyfills.isNaN(input);
 } // signedOffset('-5', '30') -> -330
 
 function signedOffset(offHourStr, offMinuteStr) {
   let offHour = parseInt(offHourStr, 10); // don't || this because we want to preserve -0
 
-  if (isNaN$2(offHour)) {
+  if (isNaN$1(offHour)) {
     offHour = 0;
   }
 
   const offMin = parseInt(offMinuteStr, 10) || 0,
-    offMinSigned = offHour < 0 || is$1(offHour, -0) ? -offMin : offMin;
+    offMinSigned = offHour < 0 || is(offHour, -0) ? -offMin : offMin;
   return offHour * 60 + offMinSigned;
 } // COERCION
 
 function asNumber(value) {
   const numericValue = Number(value);
-  if (typeof value === "boolean" || value === "" || isNaN$2(numericValue))
+  if (typeof value === "boolean" || value === "" || isNaN$1(numericValue))
     throw new InvalidArgumentError(`Invalid unit value ${value}`);
   return numericValue;
 }
@@ -516,19 +505,19 @@ function normalizeObject(obj, normalizer, nonUnitKeys) {
   return normalized;
 }
 function formatOffset(offset, format) {
-  const hours = trunc$1(Math.abs(offset / 60)),
-    minutes = trunc$1(Math.abs(offset % 60)),
+  const hours = trunc(Math.abs(offset / 60)),
+    minutes = trunc(Math.abs(offset % 60)),
     sign = offset >= 0 ? "+" : "-";
 
   switch (format) {
     case "short":
-      return `${sign}${padStart$1(hours, 2)}:${padStart$1(minutes, 2)}`;
+      return `${sign}${padStart(hours, 2)}:${padStart(minutes, 2)}`;
 
     case "narrow":
       return `${sign}${hours}${minutes > 0 ? `:${minutes}` : ""}`;
 
     case "techie":
-      return `${sign}${padStart$1(hours, 2)}${padStart$1(minutes, 2)}`;
+      return `${sign}${padStart(hours, 2)}${padStart(minutes, 2)}`;
 
     default:
       throw new RangeError(`Value format ${format} is out of range for property format`);
@@ -676,7 +665,7 @@ function formatRelativeTime(unit, count, numeric = "always", narrow = false) {
     }
   }
 
-  const isInPast = is$1(count, -0) || count < 0,
+  const isInPast = is(count, -0) || count < 0,
     fmtValue = Math.abs(count),
     singular = fmtValue === 1,
     lilUnits = units[unit],
@@ -886,32 +875,32 @@ class Formatter {
       this.systemLoc = this.loc.redefaultToSystem();
     }
 
-    const df = this.systemLoc.dtFormatter(dt, assign$1({}, this.opts, opts));
+    const df = this.systemLoc.dtFormatter(dt, assign({}, this.opts, opts));
     return df.format();
   }
 
   formatDateTime(dt, opts = {}) {
-    const df = this.loc.dtFormatter(dt, assign$1({}, this.opts, opts));
+    const df = this.loc.dtFormatter(dt, assign({}, this.opts, opts));
     return df.format();
   }
 
   formatDateTimeParts(dt, opts = {}) {
-    const df = this.loc.dtFormatter(dt, assign$1({}, this.opts, opts));
+    const df = this.loc.dtFormatter(dt, assign({}, this.opts, opts));
     return df.formatToParts();
   }
 
   resolvedOptions(dt, opts = {}) {
-    const df = this.loc.dtFormatter(dt, assign$1({}, this.opts, opts));
+    const df = this.loc.dtFormatter(dt, assign({}, this.opts, opts));
     return df.resolvedOptions();
   }
 
   num(n, p = 0) {
     // we get some perf out of doing this here, annoyingly
     if (this.opts.forceSimple) {
-      return padStart$1(n, p);
+      return padStart(n, p);
     }
 
-    const opts = assign$1({}, this.opts);
+    const opts = assign({}, this.opts);
 
     if (p > 0) {
       opts.padTo = p;
@@ -2183,7 +2172,7 @@ function supportsFastNumbers(loc) {
     return (
       loc.numberingSystem === "latn" ||
       !loc.locale ||
-      startsWith$1(loc.locale, "en") ||
+      startsWith(loc.locale, "en") ||
       (hasIntl() && new Intl.DateTimeFormat(loc.intl).resolvedOptions().numberingSystem === "latn")
     );
   }
@@ -2213,7 +2202,7 @@ class PolyNumberFormatter {
     } else {
       // to match the browser's numberformatter defaults
       const fixed = this.floor ? Math.floor(i) : roundTo(i, 3);
-      return padStart$1(fixed, this.padTo);
+      return padStart(fixed, this.padTo);
     }
   }
 }
@@ -2252,7 +2241,7 @@ class PolyDateFormatter {
     }
 
     if (this.hasIntl) {
-      const intlOpts = assign$1({}, this.opts);
+      const intlOpts = assign({}, this.opts);
 
       if (z) {
         intlOpts.timeZone = z;
@@ -2300,7 +2289,7 @@ class PolyDateFormatter {
 
 class PolyRelFormatter {
   constructor(intl, isEnglish, opts) {
-    this.opts = assign$1(
+    this.opts = assign(
       {
         style: "long"
       },
@@ -2417,7 +2406,7 @@ class Locale {
 
   redefaultToEN(alts = {}) {
     return this.clone(
-      assign$1({}, alts, {
+      assign({}, alts, {
         defaultToEN: true
       })
     );
@@ -2425,7 +2414,7 @@ class Locale {
 
   redefaultToSystem(alts = {}) {
     return this.clone(
-      assign$1({}, alts, {
+      assign({}, alts, {
         defaultToEN: false
       })
     );
@@ -2519,7 +2508,7 @@ class Locale {
   extract(dt, intlOpts, field) {
     const df = this.dtFormatter(dt, intlOpts),
       results = df.formatToParts(),
-      matching = find$1(results, m => m.type.toLowerCase() === field);
+      matching = find(results, m => m.type.toLowerCase() === field);
     return matching ? matching.value : null;
   }
 
@@ -2542,7 +2531,7 @@ class Locale {
       this.locale === "en" ||
       this.locale.toLowerCase() === "en-us" ||
       (hasIntl() &&
-        startsWith$1(new Intl.DateTimeFormat(this.intl).resolvedOptions().locale, "en-us"))
+        startsWith(new Intl.DateTimeFormat(this.intl).resolvedOptions().locale, "en-us"))
     );
   }
 
@@ -2576,7 +2565,7 @@ function combineExtractors(...extractors) {
       .reduce(
         ([mergedVals, mergedZone, cursor], ex) => {
           const [val, zone, next] = ex(m, cursor);
-          return [assign$1(mergedVals, val), mergedZone || zone, next];
+          return [assign(mergedVals, val), mergedZone || zone, next];
         },
         [{}, null, 1]
       )
@@ -2878,7 +2867,7 @@ const lowOrderMatrix = {
       milliseconds: 1000
     }
   },
-  casualMatrix = assign$1(
+  casualMatrix = assign(
     {
       years: {
         quarters: 4,
@@ -2912,7 +2901,7 @@ const lowOrderMatrix = {
   ),
   daysInYearAccurate = 146097.0 / 400,
   daysInMonthAccurate = 146097.0 / 4800,
-  accurateMatrix = assign$1(
+  accurateMatrix = assign(
     {
       years: {
         quarters: 4,
@@ -2961,7 +2950,7 @@ const reverseUnits = orderedUnits.slice(0).reverse(); // clone really means "cre
 function clone(dur, alts, clear = false) {
   // deep merge for vals
   const conf = {
-    values: clear ? alts.values : assign$1({}, dur.values, alts.values || {}),
+    values: clear ? alts.values : assign({}, dur.values, alts.values || {}),
     loc: dur.loc.clone(alts.loc),
     conversionAccuracy: alts.conversionAccuracy || dur.conversionAccuracy
   };
@@ -2977,7 +2966,7 @@ function convert(matrix, fromMap, fromUnit, toMap, toUnit) {
     raw = fromMap[fromUnit] / conv,
     sameSign = sign(raw) === sign(toMap[toUnit]),
     // ok, so this is wild, but see the matrix in the tests
-    added = !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : trunc$1(raw);
+    added = !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : trunc(raw);
   toMap[toUnit] += added;
   fromMap[fromUnit] -= added * conv;
 } // NB: mutates parameters
@@ -3058,7 +3047,7 @@ class Duration {
 
   static fromMillis(count, opts) {
     return Duration.fromObject(
-      assign$1(
+      assign(
         {
           milliseconds: count
         },
@@ -3123,7 +3112,7 @@ class Duration {
     const [parsed] = parseISODuration(text);
 
     if (parsed) {
-      const obj = assign$1(parsed, opts);
+      const obj = assign(parsed, opts);
       return Duration.fromObject(obj);
     } else {
       return Duration.invalid("unparsable", `the input "${text}" can't be parsed as ISO 8601`);
@@ -3228,7 +3217,7 @@ class Duration {
 
   toFormat(fmt, opts = {}) {
     // reverse-compat since 1.2; we always round down now, never up, and we do it by default
-    const fmtOpts = assign$1({}, opts, {
+    const fmtOpts = assign({}, opts, {
       floor: opts.round !== false && opts.floor !== false
     });
     return this.isValid
@@ -3245,7 +3234,7 @@ class Duration {
 
   toObject(opts = {}) {
     if (!this.isValid) return {};
-    const base = assign$1({}, this.values);
+    const base = assign({}, this.values);
 
     if (opts.includeConfig) {
       base.conversionAccuracy = this.conversionAccuracy;
@@ -3391,7 +3380,7 @@ class Duration {
 
   set(values) {
     if (!this.isValid) return this;
-    const mixed = assign$1(this.values, normalizeObject(values, Duration.normalizeUnit, []));
+    const mixed = assign(this.values, normalizeObject(values, Duration.normalizeUnit, []));
     return clone(this, {
       values: mixed
     });
@@ -3481,7 +3470,7 @@ class Duration {
           own += vals[k];
         }
 
-        const i = trunc$1(own);
+        const i = trunc(own);
         built[k] = i;
         accumulated[k] = own - i; // we'd like to absorb these fractions in another unit
         // plus anything further down the chain that should be rolled up in to this
@@ -4562,7 +4551,7 @@ function diff(earlier, later, units, opts) {
     }
   }
 
-  const duration = Duration.fromObject(assign$1(results, opts));
+  const duration = Duration.fromObject(assign(results, opts));
 
   if (lowerOrderUnits.length > 0) {
     return Duration.fromMillis(remainingMillis, opts)
@@ -4683,7 +4672,7 @@ function oneOf(strings, startIndex) {
     return {
       regex: RegExp(strings.map(fixListRegex).join("|")),
       deser: ([s]) =>
-        findIndex$1(strings, i => stripInsensitivities(s) === stripInsensitivities(i)) + startIndex
+        findIndex(strings, i => stripInsensitivities(s) === stripInsensitivities(i)) + startIndex
     };
   }
 }
@@ -5117,7 +5106,7 @@ function expandMacroTokens(tokens, locale) {
 function explainFromTokens(locale, input, format) {
   const tokens = expandMacroTokens(Formatter.parseFormat(format), locale),
     units = tokens.map(t => unitForToken(t, locale)),
-    disqualifyingUnit = find$1(units, t => t.invalidReason);
+    disqualifyingUnit = find(units, t => t.invalidReason);
 
   if (disqualifyingUnit) {
     return {
@@ -5174,7 +5163,7 @@ function computeOrdinal(year, month, day) {
 
 function uncomputeOrdinal(year, ordinal) {
   const table = isLeapYear(year) ? leapLadder : nonLeapLadder,
-    month0 = findIndex$1(table, i => i < ordinal),
+    month0 = findIndex(table, i => i < ordinal),
     day = ordinal - table[month0];
   return {
     month: month0 + 1,
@@ -5202,7 +5191,7 @@ function gregorianToWeek(gregObj) {
     weekYear = year;
   }
 
-  return assign$1(
+  return assign(
     {
       weekYear,
       weekNumber,
@@ -5229,7 +5218,7 @@ function weekToGregorian(weekData) {
   }
 
   const { month, day } = uncomputeOrdinal(year, ordinal);
-  return assign$1(
+  return assign(
     {
       year,
       month,
@@ -5241,7 +5230,7 @@ function weekToGregorian(weekData) {
 function gregorianToOrdinal(gregData) {
   const { year, month, day } = gregData,
     ordinal = computeOrdinal(year, month, day);
-  return assign$1(
+  return assign(
     {
       year,
       ordinal
@@ -5252,7 +5241,7 @@ function gregorianToOrdinal(gregData) {
 function ordinalToGregorian(ordinalData) {
   const { year, ordinal } = ordinalData,
     { month, day } = uncomputeOrdinal(year, ordinal);
-  return assign$1(
+  return assign(
     {
       year,
       month,
@@ -5343,7 +5332,7 @@ function clone$1(inst, alts) {
     invalid: inst.invalid
   };
   return new DateTime(
-    assign$1({}, current, alts, {
+    assign({}, current, alts, {
       old: current
     })
   );
@@ -5391,20 +5380,19 @@ function objToTS(obj, offset, zone) {
 
 function adjustTime(inst, dur) {
   const oPre = inst.o,
-    year = inst.c.year + trunc$1(dur.years),
-    month = inst.c.month + trunc$1(dur.months) + trunc$1(dur.quarters) * 3,
-    c = assign$1({}, inst.c, {
+    year = inst.c.year + trunc(dur.years),
+    month = inst.c.month + trunc(dur.months) + trunc(dur.quarters) * 3,
+    c = assign({}, inst.c, {
       year,
       month,
-      day:
-        Math.min(inst.c.day, daysInMonth(year, month)) + trunc$1(dur.days) + trunc$1(dur.weeks) * 7
+      day: Math.min(inst.c.day, daysInMonth(year, month)) + trunc(dur.days) + trunc(dur.weeks) * 7
     }),
     millisToAdd = Duration.fromObject({
-      years: dur.years - trunc$1(dur.years),
-      quarters: dur.quarters - trunc$1(dur.quarters),
-      months: dur.months - trunc$1(dur.months),
-      weeks: dur.weeks - trunc$1(dur.weeks),
-      days: dur.days - trunc$1(dur.days),
+      years: dur.years - trunc(dur.years),
+      quarters: dur.quarters - trunc(dur.quarters),
+      months: dur.months - trunc(dur.months),
+      weeks: dur.weeks - trunc(dur.weeks),
+      days: dur.days - trunc(dur.days),
       hours: dur.hours,
       minutes: dur.minutes,
       seconds: dur.seconds,
@@ -5432,7 +5420,7 @@ function parseDataToDateTime(parsed, parsedZone, opts, format, text) {
   if (parsed && Object.keys(parsed).length !== 0) {
     const interpretationZone = parsedZone || zone,
       inst = DateTime.fromObject(
-        assign$1(parsed, opts, {
+        assign(parsed, opts, {
           zone: interpretationZone,
           // setZone is a valid option in the calling methods, but not in fromObject
           setZone: undefined
@@ -5647,7 +5635,7 @@ class DateTime {
     const zone = config.zone || Settings.defaultZone;
     let invalid =
       config.invalid ||
-      (isNaN$2(config.ts) ? new Invalid("invalid input") : null) ||
+      (isNaN$1(config.ts) ? new Invalid("invalid input") : null) ||
       (!zone.isValid ? unsupportedZone(zone) : null);
     /**
      * @access private
@@ -5665,7 +5653,7 @@ class DateTime {
       } else {
         const ot = zone.offset(this.ts);
         c = tsToObj(this.ts, ot);
-        invalid = isNaN$2(c.year) ? new Invalid("invalid input") : null;
+        invalid = isNaN$1(c.year) ? new Invalid("invalid input") : null;
         c = invalid ? null : c;
         o = invalid ? null : ot;
       }
@@ -5808,7 +5796,7 @@ class DateTime {
   static fromJSDate(date, options = {}) {
     const ts = isDate(date) ? date.valueOf() : NaN;
 
-    if (isNaN$2(ts)) {
+    if (isNaN$1(ts)) {
       return DateTime.invalid("invalid input");
     }
 
@@ -6644,11 +6632,11 @@ class DateTime {
     let mixed;
 
     if (settingWeekStuff) {
-      mixed = weekToGregorian(assign$1(gregorianToWeek(this.c), normalized));
+      mixed = weekToGregorian(assign(gregorianToWeek(this.c), normalized));
     } else if (!isUndefined(normalized.ordinal)) {
-      mixed = ordinalToGregorian(assign$1(gregorianToOrdinal(this.c), normalized));
+      mixed = ordinalToGregorian(assign(gregorianToOrdinal(this.c), normalized));
     } else {
-      mixed = assign$1(this.toObject(), normalized); // if we didn't set the day but we ended up on an overflow date,
+      mixed = assign(this.toObject(), normalized); // if we didn't set the day but we ended up on an overflow date,
       // use the last day of the right month
 
       if (isUndefined(normalized.day)) {
@@ -7033,7 +7021,7 @@ class DateTime {
 
   toObject(opts = {}) {
     if (!this.isValid) return {};
-    const base = assign$1({}, this.c);
+    const base = assign({}, this.c);
 
     if (opts.includeConfig) {
       base.outputCalendar = this.outputCalendar;
@@ -7076,7 +7064,7 @@ class DateTime {
       );
     }
 
-    const durOpts = assign$1(
+    const durOpts = assign(
       {
         locale: this.locale,
         numberingSystem: this.numberingSystem
@@ -7176,7 +7164,7 @@ class DateTime {
     return diffRelative(
       base,
       this.plus(padding),
-      assign$1(options, {
+      assign(options, {
         numeric: "always",
         units: ["years", "months", "days", "hours", "minutes", "seconds"]
       })
@@ -7204,7 +7192,7 @@ class DateTime {
           zone: this.zone
         }),
       this,
-      assign$1(options, {
+      assign(options, {
         numeric: "auto",
         units: ["years", "months", "days"],
         calendary: true
@@ -7466,7 +7454,7 @@ exports.Info = Info;
 exports.Interval = Interval;
 exports.InvalidZone = InvalidZone;
 exports.LocalZone = LocalZone;
-exports.Ponyfills = ponyfills;
+exports.Ponyfills = Ponyfills;
 exports.Settings = Settings;
 exports.Zone = Zone;
 //# sourceMappingURL=luxon.js.map
